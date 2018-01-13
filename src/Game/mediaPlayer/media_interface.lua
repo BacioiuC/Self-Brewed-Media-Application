@@ -6,7 +6,14 @@ function mUI:init( )
 
     self._categoryBackground = widgets.category_background.window
 
+
+
     self._currentCategoryIDX = 1
+    self._currentFocusedUIHierarchy = {}
+
+    self._currentWindowContentIDX = 1
+
+
     self._categoryLabelInitialOffset = 5
     self._categoryLabelInitialYOffset = 1
 
@@ -22,8 +29,28 @@ function mUI:init( )
 
     self:setupBackground( )
     self:setupCategoryButtons( )
+    self:setupMediaDataBase( )
+
+    self:_getContentFromMediaDB( )
 
     self:updateButtonColor( )
+
+    mHierarchy:init( )
+end
+
+function mUI:setupMediaDataBase( )
+    self._mediaDB = { }
+    for i = 1, #self._dbCategoryButtonNameTable do
+        self._mediaDB[i] = {}
+    end
+
+
+    local catToFill = 1 -- Video category
+    for j = 1, #self._dbCategoryButtonNameTable do
+        for i = 1, math.random(4, 7) do
+            self._mediaDB[j][i] = "DummyMovie"
+        end
+    end
 end
 
 -- db Prefix stands for dashBoard
@@ -50,11 +77,15 @@ function mUI:setupCategoryButtons( )
     self._positionXOffset = #self._dbCategoryButtonNameTable[1] * self._categoryNameSizeMultiplier
     self._positionX = self._categoryLabelInitialOffset - self._positionXOffset
 
+
+    self._windowContentTable = { }
     for i = 1, #self._dbCategoryButtonNameTable do 
         self:createCategoryButtons(self._dbCategoryButtonNameTable[i])
         self:createCategoryWindow(self._dbCategoryButtonNameTable[i])
     end
 
+
+    
     self:updateDashboardButtons( )
 
 end
@@ -85,6 +116,7 @@ function mUI:createCategoryWindow(_categoryName)
 
     table.insert(self._dbCategoryWindowTable, temp)
 
+   
     self:_createDummyEntriesOnWindows(temp.window, _categoryName)
 end
 
@@ -95,7 +127,34 @@ function mUI:_createDummyEntriesOnWindows(_windowName, _categoryName)
     temp.label:setPos(40, 2)
     temp.label:setDim( 20, 20)
 
+    
     _windowName:addChild(temp.label)
+    
+end
+
+function mUI:_getContentFromMediaDB( )
+    for i = 1, #self._mediaDB do
+        self:_addContentToWindow(self._mediaDB[i], i)
+    end
+end
+
+function mUI:_addContentToWindow(_contentTable, _categoryID)
+    for i = 1, #_contentTable do
+        local temp = {}
+        temp.image = element.gui:createImage( )
+        temp.image:setImage(resources.getPath("../../media/ui_elements/default_cover_art.png"), 1, 1, 1, 1)
+        temp.image:setDim(7, 15)
+        temp.image:setPos(1+i*8-8, 1)
+        temp.imagePath = "../../media/ui_elements/default_cover_art.png"
+        self._dbCategoryWindowTable[_categoryID].window:addChild(temp.image)
+        table.insert(self._windowContentTable[#self._windowContentTable], temp)
+    end
+end
+
+function mUI:_highlightCurrentSelectedContent( )
+    local currentCategory = self._currentCategoryIDX
+    local currentContentIDX = self._currentWindowContentIDX
+
 
 end
 
@@ -174,13 +233,41 @@ end
 
 
 function mUI:input( key )
+
+    local currentHierachy = mHierarchy:getCurrentDepth( )
+    if key == KEY_W then
+        currentHierachy = currentHierachy - 1
+    elseif key == KEY_S then
+        currentHierachy = currentHierachy + 1
+    end
+
+    self:handleHierachies(key)
+    
+
+    if currentHierachy < 1 then currentHierachy = 1 end
+    if currentHierachy > mHierarchy:getMaxDepth( ) then currentHierachy = mHierarchy:getMaxDepth( ) end
+
+    mHierarchy:setDepth(currentHierachy)
+
+    self:updateButtonColor( )
+end
+
+function mUI:handleHierachies(key)
+    local currentHierachy = mHierarchy:getCurrentDepth( )
+    if currentHierachy == 1 then
+        self:handleDashboardCategoryNavigation(key)
+    elseif currentHierachy == 2 then
+        self:handleWindowContentNavigation(key)
+    end
+    
+end
+
+function mUI:handleDashboardCategoryNavigation(key)
     if key == KEY_A then
         self._currentCategoryIDX = self._currentCategoryIDX - 1
     elseif key == KEY_D then
         self._currentCategoryIDX = self._currentCategoryIDX  + 1
     end
-
-    
 
     if self._currentCategoryIDX < 1 then
         self._currentCategoryIDX = #self._dbCategoryButtonTable
@@ -189,6 +276,22 @@ function mUI:input( key )
     if self._currentCategoryIDX > #self._dbCategoryButtonTable then
         self._currentCategoryIDX = 1
     end
+end
 
-    self:updateButtonColor( )
+function mUI:handleWindowContentNavigation(key)
+    if key == KEY_A then
+        self._currentWindowContentIDX = self._currentWindowContentIDX - 1
+    elseif key == KEY_D then
+        self._currentWindowContentIDX = self._currentWindowContentIDX + 1
+    end
+
+    --self._windowContentTable[self._currentWindowContentIDX].window:setImage(resources.getPath(""..self._windowContentTable[self._currentWindowContentIDX].imagePath..""), 0,0,0, 1)
+    for i,v in pairs(self._windowContentTable) do
+        if type(v) == "table" then
+            for k, j in pairs(v) do
+                print("K: "..k.."")
+            end
+        end
+    end
+    
 end
