@@ -2,6 +2,10 @@ mUI = {}
 
 function mUI:init( )
     print("UI Is loaded")
+    mHierarchy:init( )
+    fileSystem:init( )
+
+
     local roots, widgets, groups = g:loadLayout(resources.getPath("dashboard.lua"))
 
     self._categoryBackground = widgets.category_background.window
@@ -35,7 +39,7 @@ function mUI:init( )
 
     self:updateButtonColor( )
 
-    mHierarchy:init( )
+    
 end
 
 function mUI:setupMediaDataBase( )
@@ -47,8 +51,11 @@ function mUI:setupMediaDataBase( )
 
     local catToFill = 1 -- Video category
     for j = 1, #self._dbCategoryButtonNameTable do
-        for i = 1, math.random(4, 7) do
-            self._mediaDB[j][i] = "DummyMovie"
+        local contentList = fileSystem:getContentFromLibrary(j)
+        if contentList ~= nil then
+            for i = 1, #contentList do
+                self._mediaDB[j][i] = "DummyMovie"
+            end
         end
     end
 end
@@ -113,11 +120,11 @@ function mUI:createCategoryWindow(_categoryName)
     temp.window:setPos(self._categoryWindowXFocusedPosition, self._categoryWindowYPosition)
     temp.window:setDim(90, 75)
     temp.name = "".._categoryName..""
-
+    temp.content = {}
     table.insert(self._dbCategoryWindowTable, temp)
 
-   
-    self:_createDummyEntriesOnWindows(temp.window, _categoryName)
+    --self._windowContentTable[#self._windowContentTable] = { }
+    self:_createDummyEntriesOnWindows(temp, _categoryName)
 end
 
 function mUI:_createDummyEntriesOnWindows(_windowName, _categoryName)
@@ -127,10 +134,14 @@ function mUI:_createDummyEntriesOnWindows(_windowName, _categoryName)
     temp.label:setPos(40, 2)
     temp.label:setDim( 20, 20)
 
-    
-    _windowName:addChild(temp.label)
-    
+    table.insert(_windowName.content, temp)
+    _windowName.window:addChild(temp.label)
 end
+
+
+
+
+
 
 function mUI:_getContentFromMediaDB( )
     for i = 1, #self._mediaDB do
@@ -147,7 +158,7 @@ function mUI:_addContentToWindow(_contentTable, _categoryID)
         temp.image:setPos(1+i*8-8, 1)
         temp.imagePath = "../../media/ui_elements/default_cover_art.png"
         self._dbCategoryWindowTable[_categoryID].window:addChild(temp.image)
-        table.insert(self._windowContentTable[#self._windowContentTable], temp)
+        table.insert(self._dbCategoryWindowTable[_categoryID].content, temp)
     end
 end
 
@@ -170,12 +181,14 @@ function mUI:updateFocusedWindow( )
 end
 
 function mUI:updateButtonColor( )
-    for i = 1, #self._dbCategoryButtonTable do
-        local v = self._dbCategoryButtonTable[i]
-        if i == self._currentCategoryIDX then
-            v.label:setText("<c:fff600>"..self._dbCategoryButtonNameTable[i].."</c>")
-        else
-            v.label:setText("<c:ffffff>"..self._dbCategoryButtonNameTable[i].."</c>")
+    if self._dbCategoryButtonTable ~= nil then
+        for i = 1, #self._dbCategoryButtonTable do
+            local v = self._dbCategoryButtonTable[i]
+            if i == self._currentCategoryIDX then
+                v.label:setText("<c:fff600>"..self._dbCategoryButtonNameTable[i].."</c>")
+            else
+                v.label:setText("<c:ffffff>"..self._dbCategoryButtonNameTable[i].."</c>")
+            end
         end
     end
 end
@@ -237,28 +250,36 @@ function mUI:input( key )
     local currentHierachy = mHierarchy:getCurrentDepth( )
     if key == KEY_W then
         currentHierachy = currentHierachy - 1
+        --self._currentWindowContentIDX = 1
     elseif key == KEY_S then
         currentHierachy = currentHierachy + 1
+        --self._currentWindowContentIDX = 1
     end
-
+    
+  
     self:handleHierachies(key)
     
-
-    if currentHierachy < 1 then currentHierachy = 1 end
-    if currentHierachy > mHierarchy:getMaxDepth( ) then currentHierachy = mHierarchy:getMaxDepth( ) end
-
-    mHierarchy:setDepth(currentHierachy)
+    if currentHierachy ~= nil then
+        if currentHierachy < 1 then currentHierachy = 1 end
+        if currentHierachy > mHierarchy:getMaxDepth( ) then currentHierachy = mHierarchy:getMaxDepth( ) end
+        mHierarchy:setDepth(currentHierachy)
+    end
 
     self:updateButtonColor( )
 end
 
 function mUI:handleHierachies(key)
     local currentHierachy = mHierarchy:getCurrentDepth( )
+
     if currentHierachy == 1 then
         self:handleDashboardCategoryNavigation(key)
     elseif currentHierachy == 2 then
         self:handleWindowContentNavigation(key)
+        --self_currentWindowContentIDX = 1
+        
     end
+
+
     
 end
 
@@ -285,13 +306,29 @@ function mUI:handleWindowContentNavigation(key)
         self._currentWindowContentIDX = self._currentWindowContentIDX + 1
     end
 
-    --self._windowContentTable[self._currentWindowContentIDX].window:setImage(resources.getPath(""..self._windowContentTable[self._currentWindowContentIDX].imagePath..""), 0,0,0, 1)
-    for i,v in pairs(self._windowContentTable) do
-        if type(v) == "table" then
-            for k, j in pairs(v) do
-                print("K: "..k.."")
-            end
+    if self._currentWindowContentIDX < 2 then self._currentWindowContentIDX = 2 end
+    if self._currentWindowContentIDX > #self._dbCategoryWindowTable[self._currentCategoryIDX].content then self._currentWindowContentIDX = #self._dbCategoryWindowTable[self._currentCategoryIDX].content end
+    self:_updateContentHighlight( self._currentCategoryIDX)
+end
+
+
+function mUI:_updateContentHighlight(_categoryID)
+    -- get window for that category
+    if  self._dbCategoryWindowTable[_categoryID] ~= nil then
+        local v = self._dbCategoryWindowTable[_categoryID]
+
+        for i = 1, #self._dbCategoryWindowTable[_categoryID].content do
+            local j = self._dbCategoryWindowTable[_categoryID].content[i]
+            if j.image ~= nil then
+                if i == self._currentWindowContentIDX then
+                    j.image:setImage(resources.getPath("../../media/ui_elements/default_cover_art.png"), 1, 1, 1, 0.2)
+                    j.image:setDim(8, 16)
+                else
+                    j.image:setImage(resources.getPath("../../media/ui_elements/default_cover_art.png"), 1, 1, 1, 1)
+                    j.image:setDim(7, 15)
+                end
+            end    
         end
     end
-    
+
 end

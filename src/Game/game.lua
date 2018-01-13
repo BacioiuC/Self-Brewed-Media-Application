@@ -226,15 +226,16 @@ end
 
 function Game:loopPersistantKeyPressed( )
 	if Game.persistantKey == true then
-		if Game.worldTimer > Game.keyTimer + 0.5 then
-			if _st == "GlobalGameJam" then
-				local key = Game.key
-				player:keypressed( key )
-			elseif _st == "EDITOR" then
-				editor:handleInput( key )
+		if Game.keyTimer ~= nil then
+			if Game.worldTimer > Game.keyTimer + 0.5 then
+				if _st == "GlobalGameJam" then
+					local key = Game.key
+					player:keypressed( key )
+				elseif _st == "EDITOR" then
+					editor:handleInput( key )
+				end
 			end
 		end
-
 
 	end
 end

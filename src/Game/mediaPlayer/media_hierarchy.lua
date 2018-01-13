@@ -5,7 +5,7 @@ mHierarchy =  {}
 -- Second hierachy is the window content for the selected category
 function mHierarchy:init( )
     self._hDepth = 1 -- top of the screen, in the category window
-    self._hMaxDepth = 3
+    self._hMaxDepth = 2
     print("Hierachies are a go-go")
 end
 
