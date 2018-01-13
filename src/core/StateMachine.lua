@@ -54,17 +54,17 @@ end
 function mainApp( )
 	if _bGameLoaded == false then
 		_bGameLoaded = true
-	
 	else
 	
 
 	end
 
 	if _bGuiLoaded == false then
+		mUI:init( )
 		_bGuiLoaded = true
 
 	else
-
+		mUI:update( )
 	end
 end
 

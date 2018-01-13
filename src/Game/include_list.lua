@@ -71,9 +71,9 @@ includeList[44]=""
 
 includeList[45]=""
 
-includeList[46]=""
+includeList[46]="mediaPlayer.media_core"
 
-includeList[47]=""
+includeList[47]="mediaPlayer.media_interface"
 
 includeList[48]=""
 

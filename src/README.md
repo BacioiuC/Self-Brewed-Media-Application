@@ -8,6 +8,9 @@ A small media application to organize and view/browse your media library! It's a
 
 ### TO DO:
 #### UI:
+    Actual media will be featured on 3D Meshes
+    Media data (or files) will be featured on 2D ui elements
+    
 - **Home screen with categories**
  -- Video | Stream | Images | Music | Settings | Browse
  -- Access each category interact with the contents
@@ -51,6 +54,8 @@ A small media application to organize and view/browse your media library! It's a
 
 #### BackEnd:
 - **Relay information to VLC**
+
+    -- Automagically setup parameters passed to the VLC app to know if it's on Windows or Linux (or any other OS)
 - **Parse URL determine stream source**
 
     -- Best way to handle the stream 

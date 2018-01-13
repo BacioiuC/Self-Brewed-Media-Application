@@ -219,23 +219,7 @@ function Game:keypressed( key )
 	Game.key = key
 	Game.keyTimer = Game.worldTimer
 	local _st = state[currentState]
-	if _st == "GlobalGameJam" then
-		--print("KEY PRESSED HERE IN GGJ")
-		if player.isSleeping == false then
-			--print("BUT NOT PRESSED HERE")
-			--if item:getThrowProcessing( ) == false then
-			player:keypressed( key )
-			--end
-		else
-			-- wake up roll
-			local chanceToWakeup = 25
-			local roll = math.random(1, 100)
-			if roll <= chanceToWakeup then
-				player.isSleeping = false
-				log:newMessage("You woke up")
-			end
-		end
-	end
+	mUI:input( key )
 
 
 end
