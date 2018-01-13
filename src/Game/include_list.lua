@@ -78,6 +78,6 @@ includeList[47]="mediaPlayer.media_interface"
 includeList[48]="mediaPlayer.media_hierarchy"
 
 includeList[49]="fileSystem.fileSystem"
-includeList[50]=""
+includeList[50]="tvDB.tvDB"
 includeList[51]=""
 includeList[52]=""

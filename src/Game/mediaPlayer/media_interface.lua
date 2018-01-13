@@ -4,7 +4,7 @@ function mUI:init( )
     print("UI Is loaded")
     mHierarchy:init( )
     fileSystem:init( )
-
+    tvDB:init( )
 
     local roots, widgets, groups = g:loadLayout(resources.getPath("dashboard.lua"))
 
@@ -54,7 +54,19 @@ function mUI:setupMediaDataBase( )
         local contentList = fileSystem:getContentFromLibrary(j)
         if contentList ~= nil then
             for i = 1, #contentList do
-                self._mediaDB[j][i] = "DummyMovie"
+                self._mediaDB[j][i] = { }
+                self._mediaDB[j][i].content = ""..contentList[i]..""
+                local name = self._mediaDB[j][i].content:match("(.+)%..+")
+                print(">_____________________________________")
+                print("NAME: "..name.."")
+                self._mediaDB[j][i].name = name
+                local fileExists = fileSystem:file_exists(""..fileSystem:getGlobalProjectPath( ).."Game/fileSystem/db".."/"..name..".jpg")
+                if fileExists == false then
+                    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+                    local image = tvDB:_getSeries(name)
+                else
+                    print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+                end
             end
         end
     end
@@ -153,10 +165,15 @@ function mUI:_addContentToWindow(_contentTable, _categoryID)
     for i = 1, #_contentTable do
         local temp = {}
         temp.image = element.gui:createImage( )
-        temp.image:setImage(resources.getPath("../../media/ui_elements/default_cover_art.png"), 1, 1, 1, 1)
-        temp.image:setDim(7, 15)
-        temp.image:setPos(1+i*8-8, 1)
-        temp.imagePath = "../../media/ui_elements/default_cover_art.png"
+        local newPath = resources.getPath("../../Game/fileSystem/db".."/".._contentTable[i].name..".jpg")
+        if newPath == nil then
+            newPath = ""..fileSystem:getGlobalProjectPath( ).."/media/ui_elements/default_cover_art.png"
+        end
+        temp.image:setImage(newPath, 1, 1, 1, 1)
+        temp.image:setDim(15, 20)
+        temp.image:setPos(1+i*17-17, 1)
+        temp.imagePath = "../../Game/fileSystem/db".."/".._contentTable[i].name..".jpg" --"../../media/ui_elements/default_cover_art.png"
+
         self._dbCategoryWindowTable[_categoryID].window:addChild(temp.image)
         table.insert(self._dbCategoryWindowTable[_categoryID].content, temp)
     end
@@ -320,12 +337,16 @@ function mUI:_updateContentHighlight(_categoryID)
         for i = 1, #self._dbCategoryWindowTable[_categoryID].content do
             local j = self._dbCategoryWindowTable[_categoryID].content[i]
             if j.image ~= nil then
+                local newPath = resources.getPath(j.imagePath)
+                if newPath == nil then
+                    newPath = ""..fileSystem:getGlobalProjectPath( ).."/media/ui_elements/default_cover_art.png"
+                end
                 if i == self._currentWindowContentIDX then
-                    j.image:setImage(resources.getPath("../../media/ui_elements/default_cover_art.png"), 1, 1, 1, 0.2)
-                    j.image:setDim(8, 16)
+                    j.image:setImage(newPath, 1, 1, 1, 0.2)
+                    j.image:setDim(16, 21)
                 else
-                    j.image:setImage(resources.getPath("../../media/ui_elements/default_cover_art.png"), 1, 1, 1, 1)
-                    j.image:setDim(7, 15)
+                    j.image:setImage(newPath, 1, 1, 1, 1)
+                    j.image:setDim(15, 20)
                 end
             end    
         end
