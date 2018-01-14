@@ -8,6 +8,7 @@ function mUI:init( )
 
     local roots, widgets, groups = g:loadLayout(resources.getPath("dashboard.lua"))
 
+    self._backgroundImage = widgets.backGround.window
     self._categoryBackground = widgets.category_background.window
 
 
@@ -336,11 +337,17 @@ function mUI:_updateContentHighlight(_categoryID)
 
         for i = 1, #self._dbCategoryWindowTable[_categoryID].content do
             local j = self._dbCategoryWindowTable[_categoryID].content[i]
+            local bg = self._dbCategoryWindowTable[_categoryID].content[self._currentWindowContentIDX]
             if j.image ~= nil then
-                local newPath = resources.getPath(j.imagePath)
+                local newPath = resources.getPath(self._dbCategoryWindowTable[_categoryID].content[i].imagePath)
+                local newBgPath = resources.getPath(bg.imagePath)
+                local transparency = 0.4
                 if newPath == nil then
                     newPath = ""..fileSystem:getGlobalProjectPath( ).."/media/ui_elements/default_cover_art.png"
+                    transparency = 0
+                    newBgPath = ""..fileSystem:getGlobalProjectPath( ).."/media/ui_elements/default_cover_art.png"
                 end
+                self._backgroundImage:setImage(newBgPath, 1, 1, 1, transparency)
                 if i == self._currentWindowContentIDX then
                     j.image:setImage(newPath, 1, 1, 1, 0.2)
                     j.image:setDim(16, 21)
